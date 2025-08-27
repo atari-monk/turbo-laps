@@ -11,6 +11,7 @@ import { TrackGrass } from "./scenes/track-grass";
 import { LapTracker } from "./scenes/lap-tracker";
 import { GameScore } from "./scenes/game-score";
 import { Menu } from "./scenes/menu";
+import { getCanvasSizeById } from "./tools";
 
 let SCENE_MODE: "all" | "current" = "current";
 const TEST_SCENE_INDEX = 0;
@@ -94,28 +95,4 @@ function setupEngine() {
     const gameEngineFactory = new GameEngineFactory();
     const gameEngine = gameEngineFactory.getGameEngine();
     return gameEngine;
-}
-
-function getCanvasSizeById(canvasId: string): {
-    canvas: HTMLCanvasElement;
-    width: number;
-    height: number;
-} {
-    const canvas = document.getElementById(canvasId);
-
-    if (!canvas) {
-        throw new Error(`Canvas element with ID '${canvasId}' not found`);
-    }
-
-    if (!(canvas instanceof HTMLCanvasElement)) {
-        throw new Error(
-            `Element with ID '${canvasId}' is not a canvas element`
-        );
-    }
-
-    return {
-        canvas,
-        width: canvas.width,
-        height: canvas.height,
-    };
 }
