@@ -12,6 +12,7 @@ import { LapTracker } from "./scenes/lap-tracker";
 import { GameScore } from "./scenes/game-score";
 import { Menu } from "./scenes/menu";
 import { getCanvasSizeById } from "./tools";
+import { Countdown } from "./scenes/countdown";
 
 let SCENE_MODE: "all" | "current" = "current";
 const TEST_SCENE_INDEX = 0;
@@ -25,6 +26,7 @@ const ALL_SCENES = [
     "Track Grass",
     "Lap Tracker",
     "Game Score",
+    "Countdown",
 ];
 
 let gameEngine: GameEngine;
@@ -72,6 +74,10 @@ function registerScenesForAllMode(
     const trackGrass = new TrackGrass(track);
     const lapTracker = new LapTracker(track, arrowPlayer);
     const gameScore = new GameScore(lapTracker);
+    const countdown = new Countdown(() => {
+        //console.log("Countdown complete!");
+        lapTracker.start()
+    });
 
     arrowPlayer.setTrackBoundary(trackBoundary);
     arrowPlayer.setStartingPosition(startingGrid.getStartingPosition());
@@ -84,6 +90,7 @@ function registerScenesForAllMode(
     gameEngine.registerScene("Arrow Player", arrowPlayer);
     gameEngine.registerScene("Lap Tracker", lapTracker);
     gameEngine.registerScene("Game Score", gameScore);
+    gameEngine.registerScene("Countdown", countdown);
 }
 
 function registerScenes(gameEngine: GameEngine, canvas: HTMLCanvasElement) {
