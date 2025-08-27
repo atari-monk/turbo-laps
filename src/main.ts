@@ -72,7 +72,7 @@ function registerScenesForAllMode(
     const startingGrid = new StartingGrid(track);
     const roadMarkings = new RoadMarkings(track);
     const trackGrass = new TrackGrass(track);
-    const lapTracker = new LapTracker(track, arrowPlayer);
+    const lapTracker = new LapTracker(track, arrowPlayer, startingGrid);
     const gameScore = new GameScore(lapTracker);
     const countdown = new Countdown(
         () => {
