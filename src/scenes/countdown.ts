@@ -4,6 +4,7 @@ import type { Scene } from "zippy-game-engine";
 export class Countdown implements Scene {
     name = "Countdown";
     displayName = "Countdown";
+    private onInputEnable?: () => void;
 
     private countdownState: "waiting" | "counting" | "go" | "complete" =
         "waiting";
@@ -15,10 +16,12 @@ export class Countdown implements Scene {
 
     constructor(
         private readonly onCountdownComplete: () => void,
-        private readonly inputBlockCallback?: (block: boolean) => void
+        private readonly inputBlockCallback?: (block: boolean) => void,
+        onInputEnable?: () => void
     ) {
         this.onComplete = this.onCountdownComplete;
         this.blockInputCallback = this.inputBlockCallback;
+        this.onInputEnable = onInputEnable;
     }
 
     init(): void {
@@ -186,6 +189,9 @@ export class Countdown implements Scene {
         this.countdownValue = 3;
         this.countdownTimer = 0.5;
         this.totalTime = 0;
+        if (this.onInputEnable) {
+            this.onInputEnable();
+        }
     }
 
     // Public method to check if countdown is complete

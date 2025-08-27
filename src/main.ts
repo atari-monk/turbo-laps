@@ -74,10 +74,17 @@ function registerScenesForAllMode(
     const trackGrass = new TrackGrass(track);
     const lapTracker = new LapTracker(track, arrowPlayer);
     const gameScore = new GameScore(lapTracker);
-    const countdown = new Countdown(() => {
-        //console.log("Countdown complete!");
-        lapTracker.start()
-    });
+    const countdown = new Countdown(
+        () => {
+            console.log("Countdown complete!");
+            arrowPlayer.setInputEnabled(true);
+            lapTracker.start();
+        },
+        undefined,
+        () => {
+            arrowPlayer.setInputEnabled(false);
+        }
+    );
 
     arrowPlayer.setTrackBoundary(trackBoundary);
     arrowPlayer.setStartingPosition(startingGrid.getStartingPosition());
