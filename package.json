@@ -1,0 +1,20 @@
+{
+  "name": "turbo-laps-js",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview"
+  },
+  "devDependencies": {
+    "typescript": "~5.8.3",
+    "vite": "^7.1.2"
+  },
+  "dependencies": {
+    "fullscreen-canvas-vanilla": "^0.0.10",
+    "zippy-game-engine": "^1.0.10",
+    "zippy-shared-lib": "^0.2.0"
+  }
+}
