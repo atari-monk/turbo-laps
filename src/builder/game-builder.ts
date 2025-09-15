@@ -8,7 +8,8 @@ import type { IContinue } from "../scene/continue";
 import type { IGameScore } from "../scene/game-score";
 import type { IBuilder } from "../type/i-builder";
 import type { ICar } from "../car/type/i-car";
-import { JoystickAxisMode } from "../scene/virtual-joystick";
+import { JoystickAxisMode } from "../virtual-joystick/JoystickAxisMode";
+import type { ICarFactory } from "../car/type/i-car-factory";
 
 export class GameBuilder implements IBuilder {
     private scenes: Scene[] = [];
@@ -20,7 +21,10 @@ export class GameBuilder implements IBuilder {
     private continueBtn?: IContinue;
     private gameScore?: IGameScore;
 
-    constructor(private readonly factory: SceneInstanceFactory) {}
+    constructor(
+        private readonly factory: SceneInstanceFactory,
+        private readonly carFactory: ICarFactory
+    ) {}
 
     async withRectangleTrack(): Promise<GameBuilder> {
         const track = this.factory.createRectangleTrack();
@@ -53,7 +57,7 @@ export class GameBuilder implements IBuilder {
         if (!this.trackBoundary) {
             throw new Error("Track Boundary must be set before adding player");
         }
-        this.car = await this.factory.createCar();
+        this.car = await this.carFactory.createCar(false);
         this.car.setStartingGrid(this.startingGrid!);
         this.car.setStartingPosition(this.startingGrid.getStartingPosition());
         this.car.setTrackBoundary(this.trackBoundary);
@@ -172,43 +176,4 @@ export class GameBuilder implements IBuilder {
             console.warn("No starting grid scenes found");
         }
     }
-}
-
-export async function buildGameForPc(
-    factory: SceneInstanceFactory
-): Promise<Scene[]> {
-    const builder = new GameBuilder(factory);
-    const scenes = await builder
-        .withRectangleTrack()
-        .then((b) => b.withTrackGrass())
-        .then((b) => b.withRoadMarkings())
-        .then((b) => b.withStartingGrid())
-        .then((b) => b.withTrackBoundary())
-        .then((b) => b.withCar())
-        .then((b) => b.withGameScore())
-        .then((b) => b.withLapTracker())
-        .then((b) => b.withCountdown())
-        .then((b) => b.withContinueBtn())
-        .then((b) => b.build());
-    return scenes;
-}
-
-export async function buildGameForMobile(
-    factory: SceneInstanceFactory
-): Promise<Scene[]> {
-    const builder = new GameBuilder(factory);
-    const scenes = await builder
-        .withRectangleTrack()
-        .then((b) => b.withTrackGrass())
-        .then((b) => b.withRoadMarkings())
-        .then((b) => b.withStartingGrid())
-        .then((b) => b.withTrackBoundary())
-        .then((b) => b.withCar())
-        .then((b) => b.withGameScore())
-        .then((b) => b.withLapTracker())
-        .then((b) => b.withCountdown())
-        .then((b) => b.withContinueBtn())
-        .then((b) => b.withCarJoystick())
-        .then((b) => b.build());
-    return scenes;
 }

@@ -1,56 +1,57 @@
 import type { GameEngine, Scene } from "zippy-game-engine";
-import { SceneType } from "../type/scene-type";
 import type { SceneInstanceFactory } from "./scene-instance-factory";
 import { MultiSceneTestFactory } from "./multi-scene-test-factory";
-import { MultiSceneType } from "../type/multi-scene-type";
 import { MockLapTracker } from "../mock/mock-lap-tracker";
 import { TrackConfigService } from "../service/track-config.service";
 import { SoundSceneFactory } from "./sound-scene-factory";
 import { WebAudioService } from "../service/web-audio-service";
 import type { SoundConfig } from "../type/sound-config";
+import { MultiSceneId, SceneId } from "../tester/const";
+import type { CarFactory } from "../car/car-factory";
 
 export class SingleSceneTestFactory {
     constructor(
         private readonly canvas: HTMLCanvasElement,
         private readonly gameEngine: GameEngine,
-        private readonly factory: SceneInstanceFactory
+        private readonly factory: SceneInstanceFactory,
+        private readonly carFactory: CarFactory
     ) {}
 
-    async createSingleSceneTest(sceneType: SceneType): Promise<Scene> {
-        if (sceneType === SceneType.ELIPSE_TRACK)
+    async createSingleSceneTest(sceneType: SceneId): Promise<Scene> {
+        if (sceneType === SceneId.ELIPSE_TRACK)
             return this.factory.createElipseTrack();
-        if (sceneType === SceneType.RECTANGLE_TRACK)
+        if (sceneType === SceneId.RECTANGLE_TRACK)
             return this.factory.createRectangleTrack();
-        if (sceneType === SceneType.CAR)
-            return await this.factory.createCar(true);
+        if (sceneType === SceneId.CAR)
+            return await this.carFactory.createCar(true);
 
         if (
             [
-                SceneType.TRACK_BOUNDARY,
-                SceneType.STARTING_GRID,
-                SceneType.ROAD_MARKINGS,
-                SceneType.TRACK_GRASS,
+                SceneId.TRACK_BOUNDARY,
+                SceneId.STARTING_GRID,
+                SceneId.ROAD_MARKINGS,
+                SceneId.TRACK_GRASS,
             ].includes(sceneType)
         ) {
             TrackConfigService.getInstance().calculateTrackState(this.canvas);
         }
 
-        if (sceneType === SceneType.TRACK_BOUNDARY)
+        if (sceneType === SceneId.TRACK_BOUNDARY)
             return this.factory.createTrackBoundary();
-        if (sceneType === SceneType.STARTING_GRID)
+        if (sceneType === SceneId.STARTING_GRID)
             return this.factory.createStartingGrid();
-        if (sceneType === SceneType.ROAD_MARKINGS)
+        if (sceneType === SceneId.ROAD_MARKINGS)
             return this.factory.createRoadMarkings();
-        if (sceneType === SceneType.TRACK_GRASS)
+        if (sceneType === SceneId.TRACK_GRASS)
             return this.factory.createTrackGrass();
-        if (sceneType === SceneType.LAP_TRACKER)
+        if (sceneType === SceneId.LAP_TRACKER)
             return this.factory.createLapTracker(
                 {
                     position: { x: 50, y: 500 },
                 },
                 true
             );
-        if (sceneType === SceneType.COUNTDOWN)
+        if (sceneType === SceneId.COUNTDOWN)
             return this.factory.createCountdown(
                 () => {
                     console.log("GO GO GO");
@@ -59,22 +60,23 @@ export class SingleSceneTestFactory {
                     console.log("Countdown done");
                 }
             );
-        if (sceneType === SceneType.CONTINUE) {
+        if (sceneType === SceneId.CONTINUE) {
             const continueScene = this.factory.createContinue();
             continueScene.show();
             return continueScene;
         }
-        if (sceneType === SceneType.MOUSE_CURSOR)
+        if (sceneType === SceneId.MOUSE_CURSOR)
             return this.factory.createMouseCursor();
-        if (sceneType === SceneType.MENU) {
+        if (sceneType === SceneId.MENU) {
             const menu = this.factory.createMenu();
             menu.setOnStartGame(async () => {
                 const factory = new MultiSceneTestFactory(
                     this.canvas,
-                    this.factory
+                    this.factory,
+                    this.carFactory
                 );
                 const scenes = await factory.createMultiSceneTest(
-                    MultiSceneType.RACE_RESTART
+                    MultiSceneId.RACE_RESTART
                 );
                 scenes.forEach((scene) => {
                     this.gameEngine.registerScene(scene.name!, scene);
@@ -84,7 +86,7 @@ export class SingleSceneTestFactory {
             });
             return menu;
         }
-        if (sceneType === SceneType.GAME_SCORE) {
+        if (sceneType === SceneId.GAME_SCORE) {
             const mockLapTracker = new MockLapTracker();
             mockLapTracker.setMockLapTimes([12000]);
             mockLapTracker.triggerRaceComplete();
@@ -92,7 +94,7 @@ export class SingleSceneTestFactory {
             gameScore.onRaceComplete(mockLapTracker);
             return gameScore;
         }
-        if (sceneType === SceneType.SOUND_DEMO) {
+        if (sceneType === SceneId.SOUND_DEMO) {
             const sounds: SoundConfig[] = [
                 { key: "background-music", path: `/assets/audio/melody.wav` },
                 { key: "click-sound", path: `/assets/audio/click.wav` },
@@ -104,13 +106,13 @@ export class SingleSceneTestFactory {
                 this.gameEngine.input
             );
         }
-        if (sceneType === SceneType.VIRTUAL_JOYSTICK) {
+        if (sceneType === SceneId.VIRTUAL_JOYSTICK) {
             return this.factory.createVirtualJoystick();
         }
-        if (sceneType === SceneType.TEST_CAR) {
+        if (sceneType === SceneId.TEST_CAR) {
             return this.factory.createTestCar();
         }
-        if (sceneType === SceneType.STEERABLE_RECT) {
+        if (sceneType === SceneId.STEERABLE_RECT) {
             return this.factory.createSteerableRect();
         }
         throw new Error(`Unknown scene type: ${sceneType}`);

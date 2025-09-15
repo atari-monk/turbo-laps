@@ -1,34 +1,36 @@
-import { MultiSceneType } from "../type/multi-scene-type";
 import type { Scene } from "zippy-game-engine";
 import type { SceneInstanceFactory } from "./scene-instance-factory";
 import { TrackConfigService } from "../service/track-config.service";
-import { JoystickAxisMode } from "../scene/virtual-joystick";
+import { JoystickAxisMode } from "../virtual-joystick/JoystickAxisMode";
+import { MultiSceneId } from "../tester/const";
+import type { ICarFactory } from "../car/type/i-car-factory";
 
 export class MultiSceneTestFactory {
     constructor(
         private readonly canvas: HTMLCanvasElement,
-        private readonly factory: SceneInstanceFactory
+        private readonly factory: SceneInstanceFactory,
+        private readonly carFactory: ICarFactory
     ) {}
 
     public async createMultiSceneTest(
-        sceneType: MultiSceneType
+        sceneType: MultiSceneId
     ): Promise<Scene[]> {
         switch (sceneType) {
-            case MultiSceneType.TRACK_CURSOR:
+            case MultiSceneId.TRACK_CURSOR:
                 return this.createTrackCursorTest();
-            case MultiSceneType.START_RACE:
+            case MultiSceneId.START_RACE:
                 return await this.createStartRaceTest();
-            case MultiSceneType.CAR_OUT_OF_TRACK:
+            case MultiSceneId.CAR_OUT_OF_TRACK:
                 return await this.createCarOutOfTrackTest();
-            case MultiSceneType.LAP_MEASUREMENT:
+            case MultiSceneId.LAP_MEASUREMENT:
                 return await this.createLapMeasurementTest();
-            case MultiSceneType.RACE_RESTART:
+            case MultiSceneId.RACE_RESTART:
                 return await this.createRaceRestartTest();
-            case MultiSceneType.JOYSTICK_TEST:
+            case MultiSceneId.JOYSTICK_TEST:
                 return this.createJoystickTest();
-            case MultiSceneType.XY_JOYSTICK_TEST:
+            case MultiSceneId.XY_JOYSTICK_TEST:
                 return this.createXYJoystickTest();
-            case MultiSceneType.JOYSTICK_FOR_CAR:
+            case MultiSceneId.JOYSTICK_FOR_CAR:
                 return this.createJoystickForCar();
             default:
                 throw new Error(`Unknown multi-scene type: ${sceneType}`);
@@ -45,7 +47,7 @@ export class MultiSceneTestFactory {
     private async createStartRaceTest(): Promise<Scene[]> {
         const track = this.factory.createRectangleTrack();
         const startingGrid = this.factory.createStartingGrid();
-        const player = await this.factory.createCar();
+        const player = await this.carFactory.createCar(false);
         const countdown = this.factory.createCountdown(
             () => player.setInputEnabled(true),
             () => console.log("Countdown done")
@@ -60,7 +62,7 @@ export class MultiSceneTestFactory {
         TrackConfigService.getInstance().calculateTrackState(this.canvas);
         const trackBoundary = this.factory.createTrackBoundary();
         const startingGrid = this.factory.createStartingGrid();
-        const player = await this.factory.createCar(true);
+        const player = await this.carFactory.createCar(true);
 
         player.setTrackBoundary(trackBoundary);
         player.setStartingPosition(startingGrid.getStartingPosition());
@@ -71,7 +73,7 @@ export class MultiSceneTestFactory {
     private async createLapMeasurementTest(): Promise<Scene[]> {
         const track = this.factory.createRectangleTrack();
         const startingGrid = this.factory.createStartingGrid();
-        const player = await this.factory.createCar();
+        const player = await this.carFactory.createCar(true);
         const lapTracker = this.factory.createLapTracker(player);
         const countdown = this.factory.createCountdown(
             () => {
@@ -97,7 +99,7 @@ export class MultiSceneTestFactory {
         const track = this.factory.createRectangleTrack();
         const trackBoundary = this.factory.createTrackBoundary();
         const startingGrid = this.factory.createStartingGrid();
-        const player = await this.factory.createCar();
+        const player = await this.carFactory.createCar(false);
         const lapTracker = this.factory.createLapTracker(player);
         const countdown = this.factory.createCountdown(
             () => {
@@ -167,7 +169,7 @@ export class MultiSceneTestFactory {
         return [joystick, steerableRect];
     }
 
-    async createJoystickForCar(): Promise<Scene[] | PromiseLike<Scene[]>> {
+    private async createJoystickForCar(): Promise<Scene[]> {
         const accelerationJoystick = this.factory.createVirtualJoystick({
             relativePosition: { x: 0.2, y: 0.8 },
             axisMode: JoystickAxisMode.YOnly,
@@ -180,7 +182,7 @@ export class MultiSceneTestFactory {
             identifier: "steering",
         });
 
-        const car = await this.factory.createCar(true);
+        const car = await this.carFactory.createCar(true);
 
         accelerationJoystick.setAccelerationControl(car);
         steeringJoystick.setSteeringControl(car);
